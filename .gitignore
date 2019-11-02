@@ -1,0 +1,6 @@
+#ignore backup files
+*.idx
+*.bak
+*~
+#ignore compiled perl scripts
+*.exe
