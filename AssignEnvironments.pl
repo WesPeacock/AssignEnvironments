@@ -24,7 +24,7 @@ my $scriptname = fileparse($0, qr/\.[^.]*/); # script name without the .pl
 GetOptions (
 	'inifile:s'   => \(my $inifilename = "$scriptname.ini"), # ini filename
 	'section:s'   => \(my $inisection = "AssignEnvironments"), # section of ini file to use
-	'list'       => \my $listonly, # list the environments and stop
+	'listenv'       => \my $listenv, # list the environments
 	'exact'       => \my $exact, # don't normalize environment strings before matching
 	
 # additional options go here.
@@ -133,23 +133,31 @@ my %envhash; # hash of environment rt entries
 foreach my $rt ($fwdatatree->findnodes(q#//rt#)) {
 	my $guid = $rt->getAttribute('guid');
 	$rthash{$guid} = $rt;
-	if ($rt->getAttribute('class') eq 'PhEnvironment') {
-		$envhash{$guid} = $rt;
-		}
+	$envhash{$guid} = $rt	if ($rt->getAttribute('class') eq 'PhEnvironment')
 	}
 	
 #say "envhash:", Dumper(%envhash) if $debug;
-if ($listonly) {
+if ($listenv) {
 	while ((my $envguid, my $envrt) = each (%envhash)) {
-		say STDERR "guid:$envguid" if $debug;
-		my $envtext = "";
-		foreach ($envrt->findnodes('./StringRepresentation/Str/Run/text()')) {
-			$envtext .= $_->toString;
-			};
-		say STDERR "envtext:$envtext" if $debug;
+		say STDERR "Envguid:$envguid" if $debug;
+		my $envtext = getStringfromNodeList ($envrt, './StringRepresentation/Str/Run/text()');
+		say STDERR "Envtext:$envtext" if $debug;
 		}
 	}
 exit;
+=pod
+		{
+		my $envtext = "";
+		foreach ($rt->findnodes('./StringRepresentation/Str/Run/text()')) {
+			$envtext .= $_->toString;
+			};
+		my $envname;
+		foreach ($rt->findnodes('./Name/AUni/text()')) {
+			$envname .= $_->toString;
+			};
+
+		}
+=cut
 
 my $modeltag = "";
 my $modifytag = "";
@@ -248,6 +256,33 @@ print {$out_fh} $xmlstring;
 
 
 # Subroutines
+
+sub getStringfromNodeList {
+# concatenate all the strings from a node list
+my ($node, $xpath) =@_; # 
+=pod
+For Example,
+$rt points to the following node:
+	<rt class="..." guid="..." ownerguid="...">
+	<OtherStuff>...</OtherStuff>
+	<StringRepresentation><Str>
+	<Run underline="none" ws="en">/_(</Run>
+	<Run underline="none" ws="nko">[C]</Run>
+	<Run underline="none" ws="en">)</Run>
+	<Run underline="none" ws="nko">[+ATR]</Run>
+	</Str></StringRepresentation>
+	</rt>
+$xpath= './StringRepresentation/Str/Run/text()';
+Returns:
+	'/_([C])[+ATR]'
+=cut
+my $retstring;
+foreach ($node->findnodes($xpath)) {
+	$retstring .= $_->toString;
+	}
+return $retstring;
+}
+
 sub rtheader { # dump the <rt> part of the record
 my ($node) = @_;
 return  ( split /\n/, $node )[0];
