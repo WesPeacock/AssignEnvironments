@@ -38,6 +38,12 @@ die "Quitting: couldn't find the INI file $inifilename\n$USAGE\n" if !$config;
 say "Using INI file $inifilename" if $debug;
 my $allomorphSFMs= $config->{"$inisection"}->{allomorphSFMs};
 say STDERR "allomorph SFM =\\$allomorphSFMs" if $debug;
+
+my $stemguid = $config->{"$inisection"}->{stemguid};
+my $prefixguid = $config->{"$inisection"}->{prefixguid};
+my $suffixguid = $config->{"$inisection"}->{suffixguid};
+my $phraseguid = $config->{"$inisection"}->{phraseguid};
+
 my $infwdata = $config->{"$inisection"}->{infwdata};
 #say STDERR "config:", Dumper($config) if $debug;
 say STDERR "infwdata:$infwdata" if $debug;
