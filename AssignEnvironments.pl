@@ -15,6 +15,12 @@ infilename=Panao Quechua.fwdata
 outfilename=Panao Quechua.1.fwdata
 allomorphSFMs=a
 
+; MorphType guids
+prefixguid=d7f713db-e8cf-11d3-9764-00c04f186933
+suffixguid=d7f713dd-e8cf-11d3-9764-00c04f186933
+stemguid=d7f713e8-e8cf-11d3-9764-00c04f186933
+phraseguid=a23b6faa-1052-4f4d-984b-4b338bdaf95f
+
 To Do:
 List Allomorphs
 
