@@ -27,6 +27,7 @@ To Do:
 List Allomorphs -- done
 move listing settings to INI file
 
+add noXML setting
 
 If Allomorph contains an environment
 
