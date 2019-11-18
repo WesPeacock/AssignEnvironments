@@ -33,6 +33,7 @@ GetOptions (
 	'inifile:s'   => \(my $inifilename = "$scriptname.ini"), # ini filename
 	'section:s'   => \(my $inisection = "AssignEnvironments"), # section of ini file to use
 	'listenv'       => \my $listenv, # list the environments
+	'listallo'       => \my $listallo, # list the stem and affix allomorphs
 	'exact'       => \my $exact, # don't normalize environment strings before matching
 	
 # additional options go here.
@@ -138,21 +139,46 @@ say STDERR "$infwdata Loaded" if $debug;
 
 my %rthash; # hash of all rt entries 
 my %envhash; # hash of environment rt entries
+my %mostemallohash; # hash of MoStemAllomorph rts
+my %moaffixallohash; # hash of MoAffixAllomorph rts
 foreach my $rt ($fwdatatree->findnodes(q#//rt#)) {
 	my $guid = $rt->getAttribute('guid');
 	$rthash{$guid} = $rt;
-	$envhash{$guid} = $rt	if ($rt->getAttribute('class') eq 'PhEnvironment')
+	if ($rt->getAttribute('class') eq 'MoStemAllomorph') {
+		$mostemallohash{$guid} = $rt;
+		}
+	elsif ($rt->getAttribute('class') eq 'MoAffixAllomorph') {
+		$moaffixallohash{$guid} = $rt;
+		}
+	elsif ($rt->getAttribute('class') eq 'PhEnvironment') {
+		$envhash{$guid} = $rt;
+		}
 	}
 	
 #say "envhash:", Dumper(%envhash) if $debug;
 if ($listenv) {
 	while ((my $envguid, my $envrt) = each (%envhash)) {
-		say STDERR "Envguid:$envguid" if $debug;
 		my $envtext = getStringfromNodeList ($envrt, './StringRepresentation/Str/Run/text()');
-		say STDERR "Envtext:$envtext" if $debug;
+		say '<Envguid>', $envguid, '</Envguid><Envtext>', $envtext, '</Envtext>';
 		}
 	}
-exit;
+
+#say "StemAllohash:", Dumper(%mostemallohash) if $debug;
+#say "AffixAllohash:", Dumper(%moaffixallohash) if $debug;
+if ($listallo) {
+	while ((my $alloguid, my $allort) = each (%mostemallohash)) {
+		my $allotext = getStringfromNodeList ($allort, './Form/AUni/text()');
+		say '<StemAlloguid>', $alloguid, '</StemAlloguid><StemAlloText>', $allotext, '</StemAlloText>';
+		}
+	while ((my $alloguid, my $allort) = each (%moaffixallohash)) {
+		my $allotext = getStringfromNodeList ($allort, './Form/AUni/text()');
+		say '<AffixAlloguid>', $alloguid, '</AffixAlloguid><AffixAlloText>', $allotext, '</AffixAlloText>';
+		}
+	}
+
+exit if ($listenv || $listallo);
+
+die;
 =pod
 		{
 		my $envtext = "";
