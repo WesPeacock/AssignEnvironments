@@ -14,6 +14,8 @@ use Config::Tiny;
 infilename=Panao Quechua.fwdata
 outfilename=Panao Quechua.1.fwdata
 allomorphSFMs=a
+ListEnvs=Yes
+ListAllos=Yes
 
 ; MorphType guids
 prefixguid=d7f713db-e8cf-11d3-9764-00c04f186933
@@ -22,7 +24,9 @@ stemguid=d7f713e8-e8cf-11d3-9764-00c04f186933
 phraseguid=a23b6faa-1052-4f4d-984b-4b338bdaf95f
 
 To Do:
-List Allomorphs
+List Allomorphs -- done
+move listing settings to INI file
+
 
 If Allomorph contains an environment
 
@@ -38,8 +42,7 @@ my $scriptname = fileparse($0, qr/\.[^.]*/); # script name without the .pl
 GetOptions (
 	'inifile:s'   => \(my $inifilename = "$scriptname.ini"), # ini filename
 	'section:s'   => \(my $inisection = "AssignEnvironments"), # section of ini file to use
-	'listenv'       => \my $listenv, # list the environments
-	'listallo'       => \my $listallo, # list the stem and affix allomorphs
+	'list'       => \my $list, # list only
 	'exact'       => \my $exact, # don't normalize environment strings before matching
 	
 # additional options go here.
@@ -53,6 +56,8 @@ die "Quitting: couldn't find the INI file $inifilename\n$USAGE\n" if !$config;
 say "Using INI file $inifilename" if $debug;
 my $allomorphSFMs= $config->{"$inisection"}->{allomorphSFMs};
 say STDERR "allomorph SFM =\\$allomorphSFMs" if $debug;
+my $listenv = $list && ($config->{"$inisection"}->{ListEnvs} =~ m/(t|y)/i); # True or Yes
+my $listallo = $list && ($config->{"$inisection"}->{ListAllos} =~ m/(t|y)/i); # True or Yes
 
 my $stemguid = $config->{"$inisection"}->{stemguid};
 my $prefixguid = $config->{"$inisection"}->{prefixguid};
