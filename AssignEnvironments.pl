@@ -14,6 +14,14 @@ use Config::Tiny;
 infilename=Panao Quechua.fwdata
 outfilename=Panao Quechua.1.fwdata
 allomorphSFMs=a
+
+To Do:
+List Allomorphs
+
+If Allomorph contains an environment
+
+Handle clitics
+	?marked by Form= or =Form
 =cut
 
 use File::Basename;
