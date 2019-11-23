@@ -151,6 +151,8 @@ Don't run $0 when FW is running.\
 Run it on a copy of the project, not the original!\
 I'm quitting" if -f $lockfile ;
 
+my $aflang = $config->{"$inisection"}->{AlterateFormLanguage};
+
 say "Processing fwdata file: $infwdata";
 
 my $fwdatatree = XML::LibXML->load_xml(location => $infwdata);
@@ -186,11 +188,11 @@ if ($listenv) {
 #say "AffixAllohash:", Dumper(%moaffixallohash) if $debug;
 if ($listallo) {
 	while ((my $alloguid, my $allort) = each (%mostemallohash)) {
-		my $allotext = getStringfromNodeList ($allort, './Form/AUni/text()');
+		my $allotext = getStringfromNodeList ($allort, './Form/AUni[@ws="' . $aflang .'"]/text()');
 		say '<StemAlloguid>', $alloguid, '</StemAlloguid><StemAlloText>', $allotext, '</StemAlloText>';
 		}
 	while ((my $alloguid, my $allort) = each (%moaffixallohash)) {
-		my $allotext = getStringfromNodeList ($allort, './Form/AUni/text()');
+		my $allotext = getStringfromNodeList ($allort, './Form/AUni[@ws="' . $aflang .'"]/text()');
 		say '<AffixAlloguid>', $alloguid, '</AffixAlloguid><AffixAlloText>', $allotext, '</AffixAlloText>';
 		}
 	}
