@@ -1,5 +1,12 @@
 #!/usr/bin/env perl
 my $USAGE = "Usage: $0 [--inifile inifile.ini] [--section section] [--list] [--exact] [--debug] [file.sfm]";
+=pod
+A script to process a FLEx database and:
+ - list alternate forms
+ - list environments
+ - parse alternate forms for an environment specification and assign the matching environment to the alternate form
+  - matches can be exact or fuzzy, i.e. with spaces deleted
+=cut
 use 5.016;
 use strict;
 use warnings;
