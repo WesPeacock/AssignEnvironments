@@ -158,29 +158,58 @@ say "Processing fwdata file: $infwdata";
 my $fwdatatree = XML::LibXML->load_xml(location => $infwdata);
 say STDERR "$infwdata Loaded" if $debug;
 
-my %rthash; # hash of all rt entries 
+my %rthash; # hash of all rt entries
+my %mostemallohash; # hash of MoStemAllomorph rts in AlternateForms
+my %moaffixallohash; # hash of MoAffixAllomorph rts in AlternateForms
 my %envhash; # hash of environment rt entries
-my %mostemallohash; # hash of MoStemAllomorph rts
-my %moaffixallohash; # hash of MoAffixAllomorph rts
+my %envtexthash; # hash of environment guid/exact environment
+my %envfuzztexthash; # hash of environment guid/fuzzy environment
 foreach my $rt ($fwdatatree->findnodes(q#//rt#)) {
 	my $guid = $rt->getAttribute('guid');
 	$rthash{$guid} = $rt;
-	if ($rt->getAttribute('class') eq 'MoStemAllomorph') {
-		$mostemallohash{$guid} = $rt;
-		}
-	elsif ($rt->getAttribute('class') eq 'MoAffixAllomorph') {
-		$moaffixallohash{$guid} = $rt;
-		}
-	elsif ($rt->getAttribute('class') eq 'PhEnvironment') {
+	if ($rt->getAttribute('class') eq 'PhEnvironment') {
 		$envhash{$guid} = $rt;
+		my $envtext = getStringfromNodeList ($rt, './StringRepresentation/Str/Run/text()');
+		if (defined $envtexthash{$envtext}) {
+			say STDERR "Environment already in hash:$envtext";
+			say STDERR "guids:$envtexthash{$envtext} & $guid";
+			}
+		else {
+			$envtexthash{$envtext} = $guid;
+			}
+		$envtext =~ s/\s//g; # fuzzy match delete whitespace
+		if (defined $envfuzztexthash{$envtext}) {
+			say STDERR "Environment already in  fuzzy hash:$envtext";
+			say STDERR "guids:$envfuzztexthash{$envtext} & $guid";
+			}
+		else {
+			$envfuzztexthash{$envtext} = $guid;
+			}
 		}
 	}
-	
+
 #say "envhash:", Dumper(%envhash) if $debug;
 if ($listenv) {
 	while ((my $envguid, my $envrt) = each (%envhash)) {
 		my $envtext = getStringfromNodeList ($envrt, './StringRepresentation/Str/Run/text()');
 		say '<Envguid>', $envguid, '</Envguid><Envtext>', $envtext, '</Envtext>';
+		}
+	while ((my $envtext, my $envguid) = each (%envtexthash)) {
+		say '<Envguid>', $envguid, '</Envguid><EnvTextExact>', $envtext, '</EnvTextExact>';
+		}
+	while ((my $envfuzztext, my $envguid) = each (%envfuzztexthash)) {
+		say '<Envguid>', $envguid, '</Envguid><EnvTextFuzz>', $envfuzztext, '</EnvTextFuzz>';
+		}
+	}
+
+foreach my $afobjsur ($fwdatatree->findnodes(q#//AlternateForms/objsur#)) {
+	my $guid = $afobjsur->getAttribute('guid');
+	my $rt = $rthash{$guid};
+	if ($rt->getAttribute('class') eq 'MoStemAllomorph') {
+		$mostemallohash{$guid} = $rt;
+		}
+	else {
+		$moaffixallohash{$guid} = $rt;
 		}
 	}
 
@@ -198,8 +227,8 @@ if ($listallo) {
 	}
 
 exit if ($listenv || $listallo);
-
 die;
+
 
 my $xmlstring = $fwdatatree->toString;
 # Some miscellaneous Tidying differences
