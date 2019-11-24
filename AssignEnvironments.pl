@@ -66,6 +66,7 @@ my $allomorphSFMs= $config->{"$inisection"}->{allomorphSFMs};
 say STDERR "allomorph SFM =\\$allomorphSFMs" if $debug;
 my $listenv = $list && ($config->{"$inisection"}->{ListEnvs} =~ m/(t|y)/i); # True or Yes
 my $listallo = $list && ($config->{"$inisection"}->{ListAllos} =~ m/(t|y)/i); # True or Yes
+my $listxml = $list && ($config->{"$inisection"}->{ListAsXML} =~ m/(t|y)/i); # True or Yes
 
 my $stemguid = $config->{"$inisection"}->{stemguid};
 my $prefixguid = $config->{"$inisection"}->{prefixguid};
@@ -192,13 +193,28 @@ foreach my $rt ($fwdatatree->findnodes(q#//rt#)) {
 if ($listenv) {
 	while ((my $envguid, my $envrt) = each (%envhash)) {
 		my $envtext = getStringfromNodeList ($envrt, './StringRepresentation/Str/Run/text()');
-		say '<Envguid>', $envguid, '</Envguid><Envtext>', $envtext, '</Envtext>';
+		if ($listxml) {
+			say '<Envguid>', $envguid, '</Envguid><Envtext>', $envtext, '</Envtext>';
+			}
+		else {
+			say 'Env GUID: ', $envguid, ' Env Text: ', $envtext;
+			}
 		}
 	while ((my $envtext, my $envguid) = each (%envtexthash)) {
-		say '<Envguid>', $envguid, '</Envguid><EnvTextExact>', $envtext, '</EnvTextExact>';
+		if ($listxml) {
+			say '<Envguid>', $envguid, '</Envguid><EnvTextExact>', $envtext, '</EnvTextExact>';
+			}
+		else {
+			say 'Env GUID: ', $envguid, ' Env Exact Text: ', $envtext;
+			}
 		}
 	while ((my $envfuzztext, my $envguid) = each (%envfuzztexthash)) {
-		say '<Envguid>', $envguid, '</Envguid><EnvTextFuzz>', $envfuzztext, '</EnvTextFuzz>';
+		if ($listxml) {
+			say '<Envguid>', $envguid, '</Envguid><EnvTextFuzz>', $envfuzztext, '</EnvTextFuzz>';
+			}
+		else {
+			say 'Env GUID: ', $envguid, ' Env Fuzzy Text: ', $envfuzztext;
+			}
 		}
 	}
 
@@ -218,11 +234,25 @@ foreach my $afobjsur ($fwdatatree->findnodes(q#//AlternateForms/objsur#)) {
 if ($listallo) {
 	while ((my $alloguid, my $allort) = each (%mostemallohash)) {
 		my $allotext = getStringfromNodeList ($allort, './Form/AUni[@ws="' . $aflang .'"]/text()');
-		say '<StemAlloguid>', $alloguid, '</StemAlloguid><StemAlloText>', $allotext, '</StemAlloText>';
+		if ($listxml) {
+			say '<StemAlloguid>', $alloguid, '</StemAlloguid><StemAlloText>', $allotext, '</StemAlloText>';
+			}
+		else {
+			say 'Stem GUID: ', $alloguid, ' Stem Text: ', $allotext;
+			}
 		}
 	while ((my $alloguid, my $allort) = each (%moaffixallohash)) {
 		my $allotext = getStringfromNodeList ($allort, './Form/AUni[@ws="' . $aflang .'"]/text()');
-		say '<AffixAlloguid>', $alloguid, '</AffixAlloguid><AffixAlloText>', $allotext, '</AffixAlloText>';
+		if (!$allotext) {
+			say "Couldn't find text for GUID: $alloguid";
+			next;
+			}
+		if ($listxml) {
+			say '<AffixAlloguid>', $alloguid, '</AffixAlloguid><AffixAlloText>', $allotext, '</AffixAlloText>';
+			}
+		else {
+			say 'Affix GUID: ', $alloguid, ' Affix Text: ', $allotext;
+			}
 		}
 	}
 
