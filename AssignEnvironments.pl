@@ -62,6 +62,13 @@ use Config::Tiny;
 my $config = Config::Tiny->read($inifilename, 'crlf');
 die "Quitting: couldn't find the INI file $inifilename\n$USAGE\n" if !$config;
 say "Using INI file $inifilename" if $debug;
+
+my $aflang = $config->{"$inisection"}->{AlterateFormLanguage};
+say STDERR "Using language code:$aflang";
+my $allomorphxpath = './Form/AUni[@ws="' . $aflang .'"]/text()';
+say STDERR "Allomorph Form Xpath: $allomorphxpath" if $debug;
+
+
 my $allomorphSFMs= $config->{"$inisection"}->{allomorphSFMs};
 say STDERR "allomorph SFM =\\$allomorphSFMs" if $debug;
 my $listenv = $list && ($config->{"$inisection"}->{ListEnvs} =~ m/(t|y)/i); # True or Yes
@@ -140,7 +147,6 @@ this fwdata extract is backed up in:
 
 =cut
 
-
 my $infwdata = $config->{"$inisection"}->{infwdata};
 #say STDERR "config:", Dumper($config) if $debug;
 say STDERR "infwdata:$infwdata" if $debug;
@@ -152,7 +158,6 @@ Don't run $0 when FW is running.\
 Run it on a copy of the project, not the original!\
 I'm quitting" if -f $lockfile ;
 
-my $aflang = $config->{"$inisection"}->{AlterateFormLanguage};
 
 say "Processing fwdata file: $infwdata";
 
@@ -240,7 +245,7 @@ foreach my $afobjsur ($fwdatatree->findnodes(q#//AlternateForms/objsur#)) {
 #say "AffixAllohash:", Dumper(%moaffixallohash) if $debug;
 if ($listallo) {
 	while ((my $alloguid, my $allort) = each (%mostemallohash)) {
-		my $allotext = getStringfromNodeList ($allort, './Form/AUni[@ws="' . $aflang .'"]/text()');
+		my $allotext = getStringfromNodeList ($allort, $allomorphxpath);
 		if ($listxml) {
 			say '<StemAlloguid>', $alloguid, '</StemAlloguid><StemAlloText>', $allotext, '</StemAlloText>';
 			}
@@ -249,7 +254,7 @@ if ($listallo) {
 			}
 		}
 	while ((my $alloguid, my $allort) = each (%moaffixallohash)) {
-		my $allotext = getStringfromNodeList ($allort, './Form/AUni[@ws="' . $aflang .'"]/text()');
+		my $allotext = getStringfromNodeList ($allort, $allomorphxpath);
 		if (!$allotext) {
 			say "Couldn't find text for GUID: $alloguid";
 			next;
