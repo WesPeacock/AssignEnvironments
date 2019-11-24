@@ -221,6 +221,13 @@ if ($listenv) {
 foreach my $afobjsur ($fwdatatree->findnodes(q#//AlternateForms/objsur#)) {
 	my $guid = $afobjsur->getAttribute('guid');
 	my $rt = $rthash{$guid};
+	if ( !getStringfromNodeList ($rt, './Form/AUni[@ws="' . $aflang .'"]/text()') ) {
+		# stub only?
+		say STDERR "Bad or Empty Allomorph GUID:", $guid;
+		my $lexrt = traverseuptoclass($rt, 'LexEntry');
+		say STDERR "   Under:", displaylexentstring($lexrt);
+		next;
+		}
 	if ($rt->getAttribute('class') eq 'MoStemAllomorph') {
 		$mostemallohash{$guid} = $rt;
 		}
