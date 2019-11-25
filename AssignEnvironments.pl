@@ -329,11 +329,14 @@ my ($rt, $rtclass) = @_;
 
 sub displaylexentstring {
 my ($lexentrt) = @_;
+
 my ($formguid) = $lexentrt->findvalue('./LexemeForm/objsur/@guid');
 my $formrt =  $rthash{$formguid};
 my ($formstring) =($rthash{$formguid}->findnodes('./Form/AUni/text()'))[0]->toString;
 # If there's more than one encoding, you only get the first
 
+my ($homographno) = $lexentrt->findvalue('./HomographNumber/@val');
+
 my $guid = $lexentrt->getAttribute('guid');
-return qq#$formstring (guid="$guid")#;
+return qq#$formstring hm:$homographno (guid="$guid")#;
 }
