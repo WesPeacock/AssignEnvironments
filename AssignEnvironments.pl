@@ -165,8 +165,8 @@ my $fwdatatree = XML::LibXML->load_xml(location => $infwdata);
 say STDERR "$infwdata Loaded" if $debug;
 
 my %rthash; # hash of all rt entries
-my %mostemallohash; # hash of MoStemAllomorph rts in AlternateForms
-my %moaffixallohash; # hash of MoAffixAllomorph rts in AlternateForms
+my %mostemallohash; # hash of AlternateForms MoStemAllomorph
+my %moaffixallohash; # hash of AlternateForms MoAffixAllomorph text forms by guid
 my %envhash; # hash of environment rt entries
 my %envtexthash; # hash of environment guid/exact environment
 my %envfuzztexthash; # hash of environment guid/fuzzy environment
@@ -226,26 +226,25 @@ if ($listenv) {
 foreach my $afobjsur ($fwdatatree->findnodes(q#//AlternateForms/objsur#)) {
 	my $guid = $afobjsur->getAttribute('guid');
 	my $rt = $rthash{$guid};
-	if ( !getStringfromNodeList ($rt, './Form/AUni[@ws="' . $aflang .'"]/text()') ) {
-		# stub only?
+	my $allotext = getStringfromNodeList ($rt, './Form/AUni[@ws="' . $aflang .'"]/text()');
+	if ( !$allotext ) {
 		say STDERR "Bad or Empty Allomorph GUID:", $guid;
 		my $lexrt = traverseuptoclass($rt, 'LexEntry');
 		say STDERR "   Under:", displaylexentstring($lexrt);
 		next;
 		}
 	if ($rt->getAttribute('class') eq 'MoStemAllomorph') {
-		$mostemallohash{$guid} = $rt;
+		$mostemallohash{$guid} = $allotext;
 		}
 	else {
-		$moaffixallohash{$guid} = $rt;
+		$moaffixallohash{$guid} = $allotext;
 		}
 	}
 
 #say "StemAllohash:", Dumper(%mostemallohash) if $debug;
 #say "AffixAllohash:", Dumper(%moaffixallohash) if $debug;
-if ($listallo) {
-	while ((my $alloguid, my $allort) = each (%mostemallohash)) {
-		my $allotext = getStringfromNodeList ($allort, $allomorphxpath);
+	if ($listallo) {
+	while ((my $alloguid, my $allotext) = each (%mostemallohash)) {
 		if ($listxml) {
 			say '<StemAlloguid>', $alloguid, '</StemAlloguid><StemAlloText>', $allotext, '</StemAlloText>';
 			}
@@ -253,12 +252,7 @@ if ($listallo) {
 			say 'Stem GUID: ', $alloguid, ' Stem Text: ', $allotext;
 			}
 		}
-	while ((my $alloguid, my $allort) = each (%moaffixallohash)) {
-		my $allotext = getStringfromNodeList ($allort, $allomorphxpath);
-		if (!$allotext) {
-			say "Couldn't find text for GUID: $alloguid";
-			next;
-			}
+	while ((my $alloguid, my $allotext) = each (%moaffixallohash)) {
 		if ($listxml) {
 			say '<AffixAlloguid>', $alloguid, '</AffixAlloguid><AffixAlloText>', $allotext, '</AffixAlloText>';
 			}
