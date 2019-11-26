@@ -276,6 +276,42 @@ while ((my $alloguid, my $allotext) = each (%mostemallohash)) {
 		qq[", guid:$envguid attached to stem allomorph "$allotext"; guid:$alloguid"] if $debug;
 	# code for Stems with matched Environments goes here
 	# $envguid is the environment; $alloguid is the matching stem.
+	if ($allotext =~ m[(.*?)\-(\ *?)(/.*)]) { # prefix with an env is imported as a phrase, i.e., a stem
+		my $trunctext = $1;
+		my $allort = $rthash{$alloguid};
+		# Attribute values are done in place
+		(my $attr) = $allort->findnodes('./@class');
+		$attr->setValue("MoAffixAllomorph") if $attr;
+		($attr) = $allort->findnodes('./MorphType/objsur/@guid');
+		$attr->setValue($prefixguid) if $attr;
+
+		# Copy the MorphType node to  make a new tree with PhonEnv node with the environment guid
+		my $XMLstring = ($allort->findnodes('./MorphType'))[0]->toString;
+		$XMLstring =~ s/MorphType/PhoneEnv/g;
+		$XMLstring =~ s/(?<=guid\=\")[^\"]*/$envguid/;
+		say STDERR "PhoneEnv node:$XMLstring" if $debug;
+		my $newnode = XML::LibXML->load_xml(string => $XMLstring )->findnodes('//*')->[0];
+		$allort->insertAfter($newnode, ($allort->findnodes('./MorphType'))[0]);
+
+		# rewrite Form with the truncated text
+		my ($oldTextnode) = $allort->findnodes('./Form/AUni[@ws="' . $aflang .'"]');
+		say STDERR "Old envform:", $oldTextnode->toString if $debug;
+		say STDERR "trunctext:$trunctext" if $debug;
+		$XMLstring = qq[<AUni ws="$aflang">$trunctext</AUni>];
+		say STDERR "New envform:$XMLstring" if $debug;
+		$newnode = XML::LibXML->load_xml(string => $XMLstring )->findnodes('//*')->[0];
+		$oldTextnode->parentNode->replaceChild($newnode, $oldTextnode) if $oldTextnode;
+		}
+	else { # not a prefix
+		$allotext =~ m[(.*?)(\ *?)(/.*)];
+		my $trunctext = $1;
+		if ($trunctext =~ m/ /) { # a space means it's really a phrase
+			say STDERR "Todo phrase matched alloform $allotext " if $debug;
+			}
+		else { # regular single word stem
+			say STDERR "Todo stem matched alloform $allotext " if $debug;
+			}
+		}
 	}
 
 
