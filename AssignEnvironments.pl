@@ -263,7 +263,20 @@ foreach my $afobjsur ($fwdatatree->findnodes(q#//AlternateForms/objsur#)) {
 	}
 
 exit if ($listenv || $listallo);
-die;
+
+while ((my $alloguid, my $allotext) = each (%mostemallohash)) {
+	(my $matchtype, my $envguid) = matchEnvironment($allotext, \%envtexthash, \%envfuzztexthash);
+	next if !$matchtype; # no env in this allomorph
+	if ($matchtype eq "nomatch") {
+		say STDERR qq[No environment match for stem allomorph:"$allotext"];
+		next;
+		}
+	say STDERR qq[$matchtype match -- will put env "] .
+		getStringfromNodeList ($rthash{$envguid}, './StringRepresentation/Str/Run/text()') .
+		qq[", guid:$envguid attached to stem allomorph "$allotext"; guid:$alloguid"] if $debug;
+	# code for Stems with matched Environments goes here
+	# $envguid is the environment; $alloguid is the matching stem.
+	}
 
 
 my $xmlstring = $fwdatatree->toString;
@@ -277,6 +290,43 @@ print {$out_fh} $xmlstring;
 
 
 # Subroutines
+
+sub matchEnvironment {
+# given an allophone's text, and exacthash and fuzzyhash of the environment guids
+# returns
+# $matchtype
+#    0 if no environment in the text
+#    "exact" if exact
+#    "fuzzy" if fuzzy
+#    "nomatch" if environment in the text but not found
+# $guid -- guid of the matching environment, null string if no environment or no matches.
+# environment is "/" to  the end of allomorph field
+my( $allotext, $exact_h, $fuzzy_h ) = @_;
+my %exacthash = %$exact_h;
+my %fuzzyhash = %$fuzzy_h;
+
+my $matchtype;
+# say STDERR "in matchEnv sub with $allotext" if $debug;
+return (0, "") if !($allotext =~ m[(\ *?)(/.*)]); # no env in allomorph
+my $alloenv = $2;
+say STDERR "Will check $allotext for \"$alloenv\"" if $debug;
+my $envguid; # guid of environment found in the allophone text
+if (!defined $exacthash{$alloenv}) { # not in exact hash
+	$alloenv =~ s/\s//g; # delete whitespace for fuzzy match
+	if ( !defined $fuzzyhash{$alloenv} ) { # not in fuzzy hash either
+		$matchtype="nomatch";
+		}
+	else {
+		$envguid = $envfuzztexthash{$alloenv};
+		$matchtype = "fuzzy";
+		}
+	}
+else { # exact match
+	$envguid = $envtexthash{$alloenv};
+	$matchtype = "exact";
+	}
+return ($matchtype, $envguid);
+}
 
 sub getStringfromNodeList {
 # concatenate all the strings from a node list
