@@ -286,21 +286,15 @@ while ((my $alloguid, my $allotext) = each (%mostemallohash)) {
 		($attr) = $allort->findnodes('./MorphType/objsur/@guid');
 		$attr->setValue($prefixguid) if $attr;
 
-		# Copy the MorphType node to  make a new tree with PhonEnv node with the environment guid
-		my $XMLstring = ($allort->findnodes('./MorphType'))[0]->toString;
-		$XMLstring =~ s/MorphType/PhoneEnv/g;
-		$XMLstring =~ s/(?<=guid\=\")[^\"]*/$envguid/;
-#		say STDERR "PhoneEnv node:$XMLstring" if $debug;
-		my $newnode = XML::LibXML->load_xml(string => $XMLstring )->findnodes('//*')->[0];
-		$allort->insertAfter($newnode, ($allort->findnodes('./MorphType'))[0]);
+		addPhoneEnv($allort, $envguid);
 
 		# rewrite Form with the truncated text
 		my ($oldTextnode) = $allort->findnodes('./Form/AUni[@ws="' . $aflang .'"]');
 #		say STDERR "Old envform:", $oldTextnode->toString if $debug;
 #		say STDERR "trunctext:$trunctext" if $debug;
-		$XMLstring = qq[<AUni ws="$aflang">$trunctext</AUni>];
+		my $XMLstring = qq[<AUni ws="$aflang">$trunctext</AUni>];
 #		say STDERR "New envform:$XMLstring" if $debug;
-		$newnode = XML::LibXML->load_xml(string => $XMLstring )->findnodes('//*')->[0];
+		my $newnode = XML::LibXML->load_xml(string => $XMLstring )->findnodes('//*')->[0];
 		$oldTextnode->parentNode->replaceChild($newnode, $oldTextnode) if $oldTextnode;
 		}
 	else { # not a prefix
@@ -309,21 +303,15 @@ while ((my $alloguid, my $allotext) = each (%mostemallohash)) {
 		if ($trunctext =~ m/ /) { # a space means it's really a phrase
 			my $allort = $rthash{$alloguid};
 
-			# Copy the MorphType node to  make a new tree with PhonEnv node with the environment guid
-			my $XMLstring = ($allort->findnodes('./MorphType'))[0]->toString;
-			$XMLstring =~ s/MorphType/PhoneEnv/g;
-			$XMLstring =~ s/(?<=guid\=\")[^\"]*/$envguid/;
-			# say STDERR "PhoneEnv node:$XMLstring" if $debug;
-			my $newnode = XML::LibXML->load_xml(string => $XMLstring )->findnodes('//*')->[0];
-			$allort->insertAfter($newnode, ($allort->findnodes('./MorphType'))[0]);
+			addPhoneEnv($allort, $envguid);
 
 			# rewrite Form with the truncated text
 			my ($oldTextnode) = $allort->findnodes('./Form/AUni[@ws="' . $aflang .'"]');
 	#		say STDERR "Old envform:", $oldTextnode->toString if $debug;
 	#		say STDERR "trunctext:$trunctext" if $debug;
-			$XMLstring = qq[<AUni ws="$aflang">$trunctext</AUni>];
+			my $XMLstring = qq[<AUni ws="$aflang">$trunctext</AUni>];
 	#		say STDERR "New envform:$XMLstring" if $debug;
-			$newnode = XML::LibXML->load_xml(string => $XMLstring )->findnodes('//*')->[0];
+			my $newnode = XML::LibXML->load_xml(string => $XMLstring )->findnodes('//*')->[0];
 			$oldTextnode->parentNode->replaceChild($newnode, $oldTextnode) if $oldTextnode;
 			}
 		else { # regular single word stem
@@ -334,21 +322,15 @@ while ((my $alloguid, my $allotext) = each (%mostemallohash)) {
 			($attr) = $allort->findnodes('./MorphType/objsur/@guid');
 			$attr->setValue($stemguid) if $attr;
 
-			# Copy the MorphType node to  make a new tree with PhonEnv node with the environment guid
-			my $XMLstring = ($allort->findnodes('./MorphType'))[0]->toString;
-			$XMLstring =~ s/MorphType/PhoneEnv/g;
-			$XMLstring =~ s/(?<=guid\=\")[^\"]*/$envguid/;
-			# say STDERR "PhoneEnv node:$XMLstring" if $debug;
-			my $newnode = XML::LibXML->load_xml(string => $XMLstring )->findnodes('//*')->[0];
-			$allort->insertAfter($newnode, ($allort->findnodes('./MorphType'))[0]);
+			addPhoneEnv($allort, $envguid);
 
 			# rewrite Form with the truncated text
 			my ($oldTextnode) = $allort->findnodes('./Form/AUni[@ws="' . $aflang .'"]');
 	#		say STDERR "Old envform:", $oldTextnode->toString if $debug;
 	#		say STDERR "trunctext:$trunctext" if $debug;
-			$XMLstring = qq[<AUni ws="$aflang">$trunctext</AUni>];
+			my $XMLstring = qq[<AUni ws="$aflang">$trunctext</AUni>];
 	#		say STDERR "New envform:$XMLstring" if $debug;
-			$newnode = XML::LibXML->load_xml(string => $XMLstring )->findnodes('//*')->[0];
+			my $newnode = XML::LibXML->load_xml(string => $XMLstring )->findnodes('//*')->[0];
 			$oldTextnode->parentNode->replaceChild($newnode, $oldTextnode) if $oldTextnode;
 			}
 		}
@@ -367,21 +349,14 @@ while ((my $alloguid, my $allotext) = each (%moaffixallohash)) {
 	$allotext =~ m[(.*?)(\ *?)(/.*)];
 	my $trunctext = $1;
 	my $allort = $rthash{$alloguid};
-	# Copy the MorphType node to  make a new tree with PhonEnv node with the environment guid
-	my $XMLstring = ($allort->findnodes('./MorphType'))[0]->toString;
-	$XMLstring =~ s/MorphType/PhoneEnv/g;
-	$XMLstring =~ s/(?<=guid\=\")[^\"]*/$envguid/;
-	# say STDERR "PhoneEnv node:$XMLstring" if $debug;
-	my $newnode = XML::LibXML->load_xml(string => $XMLstring )->findnodes('//*')->[0];
-	$allort->insertAfter($newnode, ($allort->findnodes('./MorphType'))[0]);
-
+	addPhoneEnv($allort, $envguid);
 	# rewrite Form with the truncated text
 	my ($oldTextnode) = $allort->findnodes('./Form/AUni[@ws="' . $aflang .'"]');
 #		say STDERR "Old envform:", $oldTextnode->toString if $debug;
 #		say STDERR "trunctext:$trunctext" if $debug;
-	$XMLstring = qq[<AUni ws="$aflang">$trunctext</AUni>];
+	my $XMLstring = qq[<AUni ws="$aflang">$trunctext</AUni>];
 #		say STDERR "New envform:$XMLstring" if $debug;
-	$newnode = XML::LibXML->load_xml(string => $XMLstring )->findnodes('//*')->[0];
+	my $newnode = XML::LibXML->load_xml(string => $XMLstring )->findnodes('//*')->[0];
 	$oldTextnode->parentNode->replaceChild($newnode, $oldTextnode) if $oldTextnode;
 
 	}
@@ -398,6 +373,18 @@ print {$out_fh} $xmlstring;
 
 
 # Subroutines
+sub addPhoneEnv {
+#given the rt  of allophone and the guid of a PhoneEnv
+# add a PhoneEnv node to the Allophone
+(my $rt, my $envguid) = @_;
+# Copy the MorphType node to  make a new tree with PhonEnv node with the environment guid
+my $XMLstring = ($rt->findnodes('./MorphType'))[0]->toString;
+$XMLstring =~ s/MorphType/PhoneEnv/g;
+$XMLstring =~ s/(?<=guid\=\")[^\"]*/$envguid/;
+# say STDERR "PhoneEnv node:$XMLstring" if $debug;
+my $newnode = XML::LibXML->load_xml(string => $XMLstring )->findnodes('//*')->[0];
+$rt->insertAfter($newnode, ($rt->findnodes('./MorphType'))[0]);
+}
 
 sub matchEnvironment {
 # given an allophone's text, and exacthash and fuzzyhash of the environment guids
