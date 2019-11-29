@@ -354,6 +354,18 @@ while ((my $alloguid, my $allotext) = each (%mostemallohash)) {
 		}
 	}
 
+while ((my $alloguid, my $allotext) = each (%moaffixallohash)) {
+	(my $matchtype, my $envguid) = matchEnvironment($allotext, \%envtexthash, \%envfuzztexthash);
+	next if !$matchtype;
+	if ($matchtype eq "nomatch") {
+		say STDERR qq[No environment match for affix allomorph:"$allotext"];
+		next;
+		}
+	say STDERR "TODO put env $envguid into affix allo $alloguid" if $debug;
+	# code for Affixes with matched Environments goes here
+	# $envguid is the environment; $alloguid is the matching stem.
+	}
+
 
 my $xmlstring = $fwdatatree->toString;
 # Some miscellaneous Tidying differences
