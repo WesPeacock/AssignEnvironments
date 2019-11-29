@@ -287,15 +287,7 @@ while ((my $alloguid, my $allotext) = each (%mostemallohash)) {
 		$attr->setValue($prefixguid) if $attr;
 
 		addPhoneEnv($allort, $envguid);
-
-		# rewrite Form with the truncated text
-		my ($oldTextnode) = $allort->findnodes('./Form/AUni[@ws="' . $aflang .'"]');
-#		say STDERR "Old envform:", $oldTextnode->toString if $debug;
-#		say STDERR "trunctext:$trunctext" if $debug;
-		my $XMLstring = qq[<AUni ws="$aflang">$trunctext</AUni>];
-#		say STDERR "New envform:$XMLstring" if $debug;
-		my $newnode = XML::LibXML->load_xml(string => $XMLstring )->findnodes('//*')->[0];
-		$oldTextnode->parentNode->replaceChild($newnode, $oldTextnode) if $oldTextnode;
+		setForm($allort, $trunctext);
 		}
 	else { # not a prefix
 		$allotext =~ m[(.*?)(\ *?)(/.*)];
@@ -304,15 +296,7 @@ while ((my $alloguid, my $allotext) = each (%mostemallohash)) {
 			my $allort = $rthash{$alloguid};
 
 			addPhoneEnv($allort, $envguid);
-
-			# rewrite Form with the truncated text
-			my ($oldTextnode) = $allort->findnodes('./Form/AUni[@ws="' . $aflang .'"]');
-	#		say STDERR "Old envform:", $oldTextnode->toString if $debug;
-	#		say STDERR "trunctext:$trunctext" if $debug;
-			my $XMLstring = qq[<AUni ws="$aflang">$trunctext</AUni>];
-	#		say STDERR "New envform:$XMLstring" if $debug;
-			my $newnode = XML::LibXML->load_xml(string => $XMLstring )->findnodes('//*')->[0];
-			$oldTextnode->parentNode->replaceChild($newnode, $oldTextnode) if $oldTextnode;
+			setForm($allort, $trunctext);
 			}
 		else { # regular single word stem
 			my $allort = $rthash{$alloguid};
@@ -323,15 +307,7 @@ while ((my $alloguid, my $allotext) = each (%mostemallohash)) {
 			$attr->setValue($stemguid) if $attr;
 
 			addPhoneEnv($allort, $envguid);
-
-			# rewrite Form with the truncated text
-			my ($oldTextnode) = $allort->findnodes('./Form/AUni[@ws="' . $aflang .'"]');
-	#		say STDERR "Old envform:", $oldTextnode->toString if $debug;
-	#		say STDERR "trunctext:$trunctext" if $debug;
-			my $XMLstring = qq[<AUni ws="$aflang">$trunctext</AUni>];
-	#		say STDERR "New envform:$XMLstring" if $debug;
-			my $newnode = XML::LibXML->load_xml(string => $XMLstring )->findnodes('//*')->[0];
-			$oldTextnode->parentNode->replaceChild($newnode, $oldTextnode) if $oldTextnode;
+			setForm($allort, $trunctext);
 			}
 		}
 	}
@@ -350,15 +326,7 @@ while ((my $alloguid, my $allotext) = each (%moaffixallohash)) {
 	my $trunctext = $1;
 	my $allort = $rthash{$alloguid};
 	addPhoneEnv($allort, $envguid);
-	# rewrite Form with the truncated text
-	my ($oldTextnode) = $allort->findnodes('./Form/AUni[@ws="' . $aflang .'"]');
-#		say STDERR "Old envform:", $oldTextnode->toString if $debug;
-#		say STDERR "trunctext:$trunctext" if $debug;
-	my $XMLstring = qq[<AUni ws="$aflang">$trunctext</AUni>];
-#		say STDERR "New envform:$XMLstring" if $debug;
-	my $newnode = XML::LibXML->load_xml(string => $XMLstring )->findnodes('//*')->[0];
-	$oldTextnode->parentNode->replaceChild($newnode, $oldTextnode) if $oldTextnode;
-
+	setForm($allort, $trunctext);
 	}
 
 
@@ -373,6 +341,7 @@ print {$out_fh} $xmlstring;
 
 
 # Subroutines
+
 sub addPhoneEnv {
 #given the rt  of allophone and the guid of a PhoneEnv
 # add a PhoneEnv node to the Allophone
@@ -384,6 +353,20 @@ $XMLstring =~ s/(?<=guid\=\")[^\"]*/$envguid/;
 # say STDERR "PhoneEnv node:$XMLstring" if $debug;
 my $newnode = XML::LibXML->load_xml(string => $XMLstring )->findnodes('//*')->[0];
 $rt->insertAfter($newnode, ($rt->findnodes('./MorphType'))[0]);
+}
+
+sub setForm {
+# given the rt  of allophone and the new (truncated) text of the Form
+# set the Form to the new text
+(my $rt, my $newtext) =@_;
+# rewrite Form with the truncated text
+my ($oldTextnode) = $rt->findnodes('./Form/AUni[@ws="' . $aflang .'"]');
+#		say STDERR "Old envform:", $oldTextnode->toString if $debug;
+#		say STDERR "trunctext:$trunctext" if $debug;
+my $XMLstring = qq[<AUni ws="$aflang">$newtext</AUni>];
+#		say STDERR "New envform:$XMLstring" if $debug;
+my $newnode = XML::LibXML->load_xml(string => $XMLstring )->findnodes('//*')->[0];
+$oldTextnode->parentNode->replaceChild($newnode, $oldTextnode) if $oldTextnode;
 }
 
 sub matchEnvironment {
