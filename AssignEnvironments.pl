@@ -64,7 +64,7 @@ die "Quitting: couldn't find the INI file $inifilename\n$USAGE\n" if !$config;
 say "Using INI file $inifilename" if $debug;
 
 my $aflang = $config->{"$inisection"}->{AlterateFormLanguage};
-say STDERR "Using language code:$aflang";
+say STDERR "Using language code:$aflang" if $debug;
 my $allomorphxpath = './Form/AUni[@ws="' . $aflang .'"]/text()';
 say STDERR "Allomorph Form Xpath: $allomorphxpath" if $debug;
 
