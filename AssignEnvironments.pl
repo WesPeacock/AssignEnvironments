@@ -228,9 +228,9 @@ foreach my $afobjsur ($fwdatatree->findnodes(q#//AlternateForms/objsur#)) {
 	my $rt = $rthash{$guid};
 	my $allotext = getStringfromNodeList ($rt, './Form/AUni[@ws="' . $aflang .'"]/text()');
 	if ( !$allotext ) {
-		say STDERR "Bad or Empty Allomorph GUID:", $guid;
 		my $lexrt = traverseuptoclass($rt, 'LexEntry');
 		say STDERR "   Under:", displaylexentstring($lexrt);
+		say STDERR "Bad or Empty Allomorph GUID:", $guid;
 		next;
 		}
 	if ($rt->getAttribute('class') eq 'MoStemAllomorph') {
