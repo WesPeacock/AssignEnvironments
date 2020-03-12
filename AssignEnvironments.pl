@@ -265,8 +265,19 @@ foreach my $afobjsur ($fwdatatree->findnodes(q#//AlternateForms/objsur#)) {
 exit if ($listenv || $listallo);
 
 while ((my $alloguid, my $allotext) = each (%mostemallohash)) {
+	my $allort = $rthash{$alloguid};
 	(my $matchtype, my $envguid) = matchEnvironment($allotext, \%envtexthash, \%envfuzztexthash);
 	next if !$matchtype; # no env in this allomorph
+	if ($allort->findnodes('./PhoneEnv')) {
+		# has environment in text but is already assigned
+		my ($priorenvguid) = $allort->findvalue('./PhoneEnv/objsur[1]/@guid');
+		say STDERR "   Under:", displaylexentstring(traverseuptoclass($allort, 'LexEntry'));
+		say STDERR qq[  Allomorph:"$allotext"];
+#		say STDERR qq[  priorenvguid:"$priorenvguid"];
+#		say STDERR "points to $rthash{$priorenvguid}";
+		say STDERR qq[  Is already assigned to Environment:"] .
+			getStringfromNodeList ($rthash{$priorenvguid}, './StringRepresentation/Str/Run/text()') .'"';
+		}
 	if ($matchtype eq "nomatch") {
 		say STDERR qq[No environment match for stem allomorph:"$allotext"];
 		next;
@@ -279,7 +290,6 @@ while ((my $alloguid, my $allotext) = each (%mostemallohash)) {
 	# $envguid is the environment; $alloguid is the matching stem.
 	if ($allotext =~ m[(.*?)\-(\ *?)(/.*)]) { # prefix with an env is imported as a phrase, i.e., a stem
 		my $trunctext = $1;
-		my $allort = $rthash{$alloguid};
 		# Attribute values are done in place
 		(my $attr) = $allort->findnodes('./@class');
 		$attr->setValue("MoAffixAllomorph") if $attr;
@@ -293,13 +303,10 @@ while ((my $alloguid, my $allotext) = each (%mostemallohash)) {
 		$allotext =~ m[(.*?)(\ *?)(/.*)];
 		my $trunctext = $1;
 		if ($trunctext =~ m/ /) { # a space means it's really a phrase
-			my $allort = $rthash{$alloguid};
-
 			addPhoneEnv($allort, $envguid);
 			setForm($allort, $trunctext);
 			}
 		else { # regular single word stem
-			my $allort = $rthash{$alloguid};
 			# Attribute values are done in place
 			(my $attr) = $allort->findnodes('./@class');
 			$attr->setValue("MoStemAllomorph") if $attr;
@@ -314,7 +321,16 @@ while ((my $alloguid, my $allotext) = each (%mostemallohash)) {
 
 while ((my $alloguid, my $allotext) = each (%moaffixallohash)) {
 	(my $matchtype, my $envguid) = matchEnvironment($allotext, \%envtexthash, \%envfuzztexthash);
+	my $allort = $rthash{$alloguid};
 	next if !$matchtype;
+	if ($allort->findnodes('./PhoneEnv')) {
+		# has environment in text but is already assigned
+		my ($priorenvguid) = $allort->findvalue('./PhoneEnv/objsur[1]/@guid');
+		say STDERR "   Under:", displaylexentstring(traverseuptoclass($allort, 'LexEntry'));
+		say STDERR qq[  Allomorph:"$allotext"];
+		say STDERR qq[  Is already assigned to Environment:"] .
+			getStringfromNodeList ($rthash{$priorenvguid}, './StringRepresentation/Str/Run/text()') .'"';
+		}
 	if ($matchtype eq "nomatch") {
 		say STDERR qq[No environment match for affix allomorph:"$allotext"];
 		next;
@@ -324,7 +340,9 @@ while ((my $alloguid, my $allotext) = each (%moaffixallohash)) {
 	# $envguid is the environment; $alloguid is the matching stem.
 	$allotext =~ m[(.*?)(\ *?)(/.*)];
 	my $trunctext = $1;
-	my $allort = $rthash{$alloguid};
+	say STDERR qq[$matchtype match -- will assign env "] .
+		getStringfromNodeList ($rthash{$envguid}, './StringRepresentation/Str/Run/text()') .
+		qq[" to allomorph "$allotext"];
 	addPhoneEnv($allort, $envguid);
 	setForm($allort, $trunctext);
 	}
